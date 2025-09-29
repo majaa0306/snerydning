@@ -55,4 +55,4 @@ legend_html = '''
 m.get_root().html.add_child(folium.Element(legend_html))
 
 # Vis kort
-st_folium(m, width=2000, height=700)
+st_folium(m, width=1000, height=700)
