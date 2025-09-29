@@ -36,7 +36,7 @@ for _, row in data.iterrows():
     farve = 'green' if row['betalt'] == 1 else 'red'
     folium.CircleMarker(
         location=[row['lat'], row['lon']],
-        radius=4,
+        radius=7,
         color=farve,
         fill=True,
         fill_color=farve,
@@ -55,4 +55,4 @@ legend_html = '''
 m.get_root().html.add_child(folium.Element(legend_html))
 
 # Vis kort
-st_folium(m, width=1000, height=700)
+st_folium(m, width=2000, height=700)
