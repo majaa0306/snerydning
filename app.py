@@ -36,7 +36,7 @@ for _, row in data.iterrows():
     farve = 'green' if row['betalt'] == 1 else 'red'
     folium.CircleMarker(
         location=[row['lat'], row['lon']],
-        radius=7,
+        radius=4,
         color=farve,
         fill=True,
         fill_color=farve,
