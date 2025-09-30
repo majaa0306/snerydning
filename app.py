@@ -38,7 +38,7 @@ for _, row in data.iterrows():
     # Selve prikken
     folium.CircleMarker(
         location=[row['lat'], row['lon']],
-        radius=5,
+        radius=9,
         color=None,
         fill=True,
         fill_color=farve,
