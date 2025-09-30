@@ -48,9 +48,10 @@ for _, row in data.iterrows():
         fill_opacity=0.4
     ).add_to(m)
     
-    # Træk husnummer ud
-    husnummer = row['adresse'].split()[1]  
-    
+    # Træk husnummer ud som det sidste ord før komma
+    adresse = row['adresse']
+    husnummer = adresse.split(',')[0].split()[-1]  # sidste ord i første del af adressen
+
     # Tekst ved siden af prikken
     folium.map.Marker(
         [row['lat'], row['lon']],
