@@ -39,7 +39,7 @@ for _, row in data.iterrows():
     folium.CircleMarker(
         location=[row['lat'], row['lon']],
         radius=5,
-        color=farve,
+        color=None,
         fill=True,
         fill_color=farve,
         fill_opacity=0.4
