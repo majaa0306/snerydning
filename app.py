@@ -6,6 +6,22 @@ from streamlit_folium import st_folium
 # Brug hele siden
 st.set_page_config(layout="wide")
 
+# CSS hack til at få kortet til at fylde hele skærmen
+st.markdown(
+    """
+    <style>
+    .block-container {
+        padding: 0;
+        margin: 0;
+    }
+    iframe {
+        height: 100vh !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Google Sheet ID
 SHEET_ID = "1DNHbwKxJ9_HKLtfJ_hC0jeHnKlmana_thEBQfr2sMfM"
 url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
@@ -59,5 +75,5 @@ for _, row in data.iterrows():
         )
     ).add_to(m)
 
-# Vis kort i fuld bredde
-st_folium(m, width=None, height=None)
+# Vis kort i fuld højde og bredde
+st_folium(m, width=None, height=800)  # height bliver overskrevet af CSS til 100vh
