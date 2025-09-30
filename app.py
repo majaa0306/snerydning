@@ -31,17 +31,26 @@ ansager_lat = 55.703423
 ansager_lon = 8.755025
 m = folium.Map(location=[ansager_lat, ansager_lon], zoom_start=15)
 
-# Tilføj prikker
+# Tilføj prikker med husnummer direkte
 for _, row in data.iterrows():
     farve = 'green' if row['betalt'] == 1 else 'red'
+    
+    # Selve prikken
     folium.CircleMarker(
         location=[row['lat'], row['lon']],
         radius=4,
         color=farve,
         fill=True,
         fill_color=farve,
-        fill_opacity=0.7,
-        popup=row['adresse']
+        fill_opacity=0.7
+    ).add_to(m)
+    
+    # Tekst lige ved siden af prikken
+    folium.map.Marker(
+        [row['lat'], row['lon']],
+        icon=folium.DivIcon(
+            html=f"""<div style="font-size:10px; color:black">{row['adresse']}</div>"""
+        )
     ).add_to(m)
 
 # Tilføj legend
