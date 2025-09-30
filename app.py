@@ -38,11 +38,11 @@ for _, row in data.iterrows():
     # Selve prikken
     folium.CircleMarker(
         location=[row['lat'], row['lon']],
-        radius=4,
+        radius=5,
         color=farve,
         fill=True,
         fill_color=farve,
-        fill_opacity=0.7
+        fill_opacity=0.4
     ).add_to(m)
     
     # Træk husnummer ud (det første "ord" efter gadenavn)
