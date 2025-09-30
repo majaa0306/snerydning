@@ -15,7 +15,7 @@ st.markdown(
         margin: 0;
     }
     iframe {
-        height: 100vh !important;
+        height: 90vh !important;
     }
     </style>
     """,
