@@ -3,6 +3,9 @@ import streamlit as st
 import folium
 from streamlit_folium import st_folium
 
+# Brug hele siden
+st.set_page_config(layout="wide")
+
 # Google Sheet ID
 SHEET_ID = "1DNHbwKxJ9_HKLtfJ_hC0jeHnKlmana_thEBQfr2sMfM"
 url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
@@ -45,8 +48,8 @@ for _, row in data.iterrows():
         fill_opacity=0.4
     ).add_to(m)
     
-    # Træk husnummer ud (det første "ord" efter gadenavn)
-    husnummer = row['adresse'].split()[1]  # fx "16" fra "Søndergade 16, 6823 Ansager"
+    # Træk husnummer ud
+    husnummer = row['adresse'].split()[1]  
     
     # Tekst ved siden af prikken
     folium.map.Marker(
@@ -56,5 +59,5 @@ for _, row in data.iterrows():
         )
     ).add_to(m)
 
-# Vis kort
-st_folium(m, width=1000, height=700)
+# Vis kort i fuld bredde
+st_folium(m, width=None, height=900)
