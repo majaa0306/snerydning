@@ -38,8 +38,8 @@ for _, row in data.iterrows():
     # Selve prikken
     folium.CircleMarker(
         location=[row['lat'], row['lon']],
-        radius=5,
-        color=farve,
+        radius=9,
+        color=None,
         fill=True,
         fill_color=farve,
         fill_opacity=0.4
@@ -55,16 +55,6 @@ for _, row in data.iterrows():
             html=f"""<div style="font-size:10px; color:black">{husnummer}</div>"""
         )
     ).add_to(m)
-
-# Tilføj legend
-legend_html = '''
-<div style="position: fixed; bottom: 50px; left: 50px; width: 150px; height: 70px; border:2px solid grey; z-index:9999; font-size:14px; background-color:white; padding: 10px;">
-<b>Betaling:</b><br>
-<i style="color:green;">●</i> Betalt<br>
-<i style="color:red;">●</i> Ikke betalt
-</div>
-'''
-m.get_root().html.add_child(folium.Element(legend_html))
 
 # Vis kort
 st_folium(m, width=1000, height=700)
