@@ -60,4 +60,4 @@ for _, row in data.iterrows():
     ).add_to(m)
 
 # Vis kort i fuld bredde
-st_folium(m, width=None, height=700)
+st_folium(m, width=None, height=None)
