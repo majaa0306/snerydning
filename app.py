@@ -31,7 +31,7 @@ ansager_lat = 55.703423
 ansager_lon = 8.755025
 m = folium.Map(location=[ansager_lat, ansager_lon], zoom_start=15)
 
-# Tilføj prikker med husnummer direkte
+# Tilføj prikker med kun husnummer
 for _, row in data.iterrows():
     farve = 'green' if row['betalt'] == 1 else 'red'
     
@@ -45,11 +45,14 @@ for _, row in data.iterrows():
         fill_opacity=0.7
     ).add_to(m)
     
-    # Tekst lige ved siden af prikken
+    # Træk husnummer ud (det første "ord" efter gadenavn)
+    husnummer = row['adresse'].split()[1]  # fx "16" fra "Søndergade 16, 6823 Ansager"
+    
+    # Tekst ved siden af prikken
     folium.map.Marker(
         [row['lat'], row['lon']],
         icon=folium.DivIcon(
-            html=f"""<div style="font-size:10px; color:black">{row['adresse']}</div>"""
+            html=f"""<div style="font-size:10px; color:black">{husnummer}</div>"""
         )
     ).add_to(m)
 
