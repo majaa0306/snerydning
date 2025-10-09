@@ -3,8 +3,6 @@ import pandas as pd
 
 st.set_page_config(layout="wide")
 
-st.title("❄️ Snerydning – Betalt / Ikke betalt")
-
 # --- Hent data fra Google Sheets ---
 SHEET_ID = "1DNHbwKxJ9_HKLtfJ_hC0jeHnKlmana_thEBQfr2sMfM"
 url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
@@ -29,7 +27,7 @@ if gade_valg != "Alle":
 # --- Lav JSON til JavaScript ---
 json_data = data.to_dict(orient="records")
 
-# --- Indlejret Leaflet-kort (ren frontend) ---
+# --- Indlejret Leaflet-kort ---
 st.components.v1.html(f"""
 <!DOCTYPE html>
 <html>
@@ -54,28 +52,25 @@ st.components.v1.html(f"""
 <script>
 var map = L.map('map').setView([55.703423, 8.755025], 15);
 
-// Tilføj OpenStreetMap lag
+// OpenStreetMap lag
 L.tileLayer('https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
   maxZoom: 19,
 }}).addTo(map);
 
-// --- Data fra Python ---
+// Data fra Python
 var points = {json_data};
 
-// --- Tilføj røde/grønne prikker ---
+// Tilføj røde/grønne prikker (uden numre)
 points.forEach(p => {{
   var color = p.betalt == 1 ? 'green' : 'red';
-  var circle = L.circleMarker([p.lat, p.lon], {{
+  L.circleMarker([p.lat, p.lon], {{
     radius: 8,
     color: color,
-    fillOpacity: 0.5
+    fillOpacity: 0
   }}).addTo(map);
-  
-  var husnr = p.adresse.split(',')[0].split(' ').slice(-1)[0];
-  circle.bindTooltip(husnr, {{ permanent: true, direction: 'right' }});
 }});
 
-// --- Live GPS tracking ---
+// Live GPS tracking + map følger position
 if (navigator.geolocation) {{
   navigator.geolocation.watchPosition(function(pos) {{
     var lat = pos.coords.latitude;
@@ -88,9 +83,10 @@ if (navigator.geolocation) {{
       window.userMarker.setLatLng([lat, lon]);
       window.userCircle.setLatLng([lat, lon]);
       window.userCircle.setRadius(pos.coords.accuracy);
+      map.setView([lat, lon], map.getZoom());  // Følg brugeren
     }}
   }},
-  function(err) {{
+  function(err){{
     console.log(err);
   }},
   {{
