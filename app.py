@@ -1,23 +1,20 @@
-import pandas as pd
 import streamlit as st
-import folium
-from streamlit_folium import st_folium
-from folium.plugins import LocateControl
-from jinja2 import Template
+import pandas as pd
 
-# Brug hele siden
 st.set_page_config(layout="wide")
 
-# --- Hent data ---
+st.title("❄️ Snerydning – Betalt / Ikke betalt")
+
+# --- Hent data fra Google Sheets ---
 SHEET_ID = "1DNHbwKxJ9_HKLtfJ_hC0jeHnKlmana_thEBQfr2sMfM"
 url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 data = pd.read_csv(url)
 
-# Konverter lat/lon (hvis komma som decimal)
+# Sørg for korrekte koordinater
 data['lat'] = data['lat'].astype(str).str.replace(',', '.').astype(float)
 data['lon'] = data['lon'].astype(str).str.replace(',', '.').astype(float)
 
-# --- Filtreringsmuligheder ---
+# --- Sidebar filtrering ---
 status_valg = st.sidebar.selectbox("Vis:", ["Alle", "Kun betalt", "Kun ikke-betalt"])
 if status_valg == "Kun betalt":
     data = data[data['betalt'] == 1]
@@ -29,58 +26,82 @@ gade_valg = st.sidebar.selectbox("Vælg gade:", gader)
 if gade_valg != "Alle":
     data = data[data['adresse'].str.startswith(gade_valg)]
 
-# --- Opret Folium-kort ---
-ansager_lat, ansager_lon = 55.703423, 8.755025
-m = folium.Map(location=[ansager_lat, ansager_lon], zoom_start=15)
+# --- Lav JSON til JavaScript ---
+json_data = data.to_dict(orient="records")
 
-# Tilføj "Find mig"-knap
-LocateControl(auto_start=False).add_to(m)
-
-# --- Indsæt JavaScript direkte for flydende live-position ---
-js_code = Template("""
+# --- Indlejret Leaflet-kort (ren frontend) ---
+st.components.v1.html(f"""
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  #map {{
+    height: 90vh;
+    width: 100%;
+    border-radius: 10px;
+  }}
+</style>
+</head>
+<body>
+<div id="map"></div>
 <script>
-if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(function(pos) {
-        var lat = pos.coords.latitude;
-        var lon = pos.coords.longitude;
-        if (!window.userMarker) {
-            window.userMarker = L.marker([lat, lon]).addTo({{map_name}});
-            window.userMarker.bindPopup("📍 Du er her!").openPopup();
-            {{map_name}}.setView([lat, lon], 17);
-        } else {
-            window.userMarker.setLatLng([lat, lon]);
-        }
-    },
-    function(err){ console.log(err); },
-    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 });
-}
+var map = L.map('map').setView([55.703423, 8.755025], 15);
+
+// Tilføj OpenStreetMap lag
+L.tileLayer('https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
+  maxZoom: 19,
+}}).addTo(map);
+
+// --- Data fra Python ---
+var points = {json_data};
+
+// --- Tilføj røde/grønne prikker ---
+points.forEach(p => {{
+  var color = p.betalt == 1 ? 'green' : 'red';
+  var circle = L.circleMarker([p.lat, p.lon], {{
+    radius: 8,
+    color: color,
+    fillOpacity: 0.5
+  }}).addTo(map);
+  
+  var husnr = p.adresse.split(',')[0].split(' ').slice(-1)[0];
+  circle.bindTooltip(husnr, {{ permanent: true, direction: 'right' }});
+}});
+
+// --- Live GPS tracking ---
+if (navigator.geolocation) {{
+  navigator.geolocation.watchPosition(function(pos) {{
+    var lat = pos.coords.latitude;
+    var lon = pos.coords.longitude;
+    if (!window.userMarker) {{
+      window.userMarker = L.marker([lat, lon]).addTo(map);
+      window.userCircle = L.circle([lat, lon], {{radius: pos.coords.accuracy, color: 'blue', fillOpacity: 0.1}}).addTo(map);
+      map.setView([lat, lon], 17);
+    }} else {{
+      window.userMarker.setLatLng([lat, lon]);
+      window.userCircle.setLatLng([lat, lon]);
+      window.userCircle.setRadius(pos.coords.accuracy);
+    }}
+  }},
+  function(err) {{
+    console.log(err);
+  }},
+  {{
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 5000
+  }});
+}} else {{
+  alert("Din browser understøtter ikke GPS tracking");
+}}
 </script>
-""").render(map_name=m.get_name())
-
-m.get_root().html.add_child(folium.Element(js_code))
-
-# --- Tilføj prikker ---
-for _, row in data.iterrows():
-    farve = 'green' if row['betalt'] == 1 else 'red'
-
-    folium.CircleMarker(
-        location=[row['lat'], row['lon']],
-        radius=9,
-        color=None,
-        fill=True,
-        fill_color=farve,
-        fill_opacity=0.4
-    ).add_to(m)
-
-    adresse = row['adresse']
-    husnummer = adresse.split(',')[0].split()[-1]
-
-    folium.map.Marker(
-        [row['lat'], row['lon']],
-        icon=folium.DivIcon(
-            html=f"""<div style="font-size:10px; color:black">{husnummer}</div>"""
-        )
-    ).add_to(m)
-
-# --- Vis kort ---
-st_folium(m, width=None, height=800)
+</body>
+</html>
+""", height=800)
