@@ -64,7 +64,7 @@ var points = {json_data};
 points.forEach(p => {{
   var color = p.betalt == 1 ? 'green' : 'red';
   L.circleMarker([p.lat, p.lon], {{
-    radius: 8,
+    radius: 9,
     color: color,
     fillOpacity: 0
   }}).addTo(map);
