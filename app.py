@@ -35,14 +35,11 @@ if gade_valg != "Alle":
 # --- Opret Folium-kort ---
 ansager_lat = 55.703423
 ansager_lon = 8.755025
-@st.cache_resource
-def init_map():
-    m = folium.Map(location=[55.703423, 8.755025], zoom_start=15)
-    LocateControl(auto_start=False).add_to(m)
-    m.get_root().add_child(LocateOnLoad())
-    return m
+# --- Opret kortet (uden cache, så det kan bruge JS-klassen korrekt) ---
+m = folium.Map(location=[55.703423, 8.755025], zoom_start=15)
+LocateControl(auto_start=False).add_to(m)
+m.get_root().add_child(LocateOnLoad())
 
-m = init_map()
 
 
 # Tilføj "Find mig"-knap
