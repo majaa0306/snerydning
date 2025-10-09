@@ -2,6 +2,9 @@ import pandas as pd
 import streamlit as st
 import folium
 from streamlit_folium import st_folium
+from folium.plugins import LocateControl
+from folium import MacroElement
+from jinja2 import Template
 
 # Brug hele siden
 st.set_page_config(layout="wide")
@@ -34,7 +37,31 @@ ansager_lat = 55.703423
 ansager_lon = 8.755025
 m = folium.Map(location=[ansager_lat, ansager_lon], zoom_start=15)
 
-# Tilføj prikker med kun husnummer
+# Tilføj "Find mig"-knap
+LocateControl(auto_start=False).add_to(m)
+
+# --- Automatisk centrering på brugerens position ---
+class LocateOnLoad(MacroElement):
+    def __init__(self):
+        super().__init__()
+        self._template = Template("""
+            {% macro script(this, kwargs) %}
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    var lat = pos.coords.latitude;
+                    var lon = pos.coords.longitude;
+                    {{this._parent.get_name()}}.setView([lat, lon], 17);
+                    L.marker([lat, lon]).addTo({{this._parent.get_name()}})
+                        .bindPopup("📍 Du er her!").openPopup();
+                });
+            }
+            {% endmacro %}
+        """)
+
+# Tilføj automatisk positionering
+m.get_root().add_child(LocateOnLoad())
+
+# --- Tilføj prikker for adresser ---
 for _, row in data.iterrows():
     farve = 'green' if row['betalt'] == 1 else 'red'
     
@@ -48,7 +75,7 @@ for _, row in data.iterrows():
         fill_opacity=0.4
     ).add_to(m)
     
-    # Træk husnummer ud som det sidste ord før komma
+    # Træk husnummer ud som sidste ord før komma
     adresse = row['adresse']
     husnummer = adresse.split(',')[0].split()[-1]  # sidste ord i første del af adressen
 
@@ -60,5 +87,5 @@ for _, row in data.iterrows():
         )
     ).add_to(m)
 
-# Vis kort i fuld bredde
+# --- Vis kort i fuld bredde ---
 st_folium(m, width=None, height=800)
