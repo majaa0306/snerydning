@@ -79,7 +79,7 @@ var map = L.map('map');
 
 // OpenStreetMap lag
 L.tileLayer('https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
-  maxZoom: 10,
+  maxZoom: 20,
 }}).addTo(map);
 
 // Data fra Python
