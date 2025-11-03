@@ -74,7 +74,7 @@ st.components.v1.html(f"""
 <button id="followButton">🔒 Følg mig: Fra</button>
 
 <script>
-var map = L.map('map').setView([55.703423, 8.755025], 19);
+var map = L.map('map').setView([55.703423, 8.755025], 17);
 
 // OpenStreetMap lag
 L.tileLayer('https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
