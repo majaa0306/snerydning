@@ -52,7 +52,7 @@ st.components.v1.html(f"""
   }}
   #followButton {{
     position: absolute;
-    top: 10px;
+    bottom: 10px;
     left: 10px;
     z-index: 1000;
     background-color: white;
