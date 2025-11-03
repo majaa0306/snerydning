@@ -45,10 +45,29 @@ st.components.v1.html(f"""
     width: 100%;
     border-radius: 10px;
   }}
+  #followButton {{
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: bold;
+  }}
+  #followButton.active {{
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+  }}
 </style>
 </head>
 <body>
 <div id="map"></div>
+<button id="followButton">🔒 Følg mig: Fra</button>
+
 <script>
 var map = L.map('map').setView([55.703423, 8.755025], 15);
 
@@ -70,20 +89,38 @@ points.forEach(p => {{
   }}).addTo(map);
 }});
 
-// Live GPS tracking + map følger position
+let followMode = false;  // starter som "fra"
+const followButton = document.getElementById("followButton");
+
+followButton.addEventListener("click", () => {{
+  followMode = !followMode;
+  if (followMode) {{
+    followButton.classList.add("active");
+    followButton.innerText = "🟢 Følg mig: Til";
+  }} else {{
+    followButton.classList.remove("active");
+    followButton.innerText = "🔒 Følg mig: Fra";
+  }}
+}});
+
+// Live GPS tracking
 if (navigator.geolocation) {{
   navigator.geolocation.watchPosition(function(pos) {{
     var lat = pos.coords.latitude;
     var lon = pos.coords.longitude;
     if (!window.userMarker) {{
       window.userMarker = L.marker([lat, lon]).addTo(map);
-      window.userCircle = L.circle([lat, lon], {{radius: pos.coords.accuracy, color: 'blue', fillOpacity: 0.1}}).addTo(map);
-      map.setView([lat, lon], 17);
+      window.userCircle = L.circle([lat, lon], {{
+        radius: pos.coords.accuracy,
+        color: 'blue',
+        fillOpacity: 0.1
+      }}).addTo(map);
+      if (followMode) map.setView([lat, lon], 17);
     }} else {{
       window.userMarker.setLatLng([lat, lon]);
       window.userCircle.setLatLng([lat, lon]);
       window.userCircle.setRadius(pos.coords.accuracy);
-      map.setView([lat, lon], map.getZoom());  // Følg brugeren
+      if (followMode) map.setView([lat, lon], map.getZoom());
     }}
   }},
   function(err){{
