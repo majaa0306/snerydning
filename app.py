@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(
-    page_title="Snerydning - kort",
+    page_title="Snerydning",
     layout="wide",
     page_icon="🗺️"  # valgfrit ikon i fanen
 )
