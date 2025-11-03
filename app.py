@@ -1,7 +1,12 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Snerydning - kort",
+    layout="wide",
+    page_icon="🗺️"  # valgfrit ikon i fanen
+)
+
 
 # --- Hent data fra Google Sheets ---
 SHEET_ID = "1DNHbwKxJ9_HKLtfJ_hC0jeHnKlmana_thEBQfr2sMfM"
