@@ -2,11 +2,10 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(
-    page_title="Snerydning",
-    layout="wide",
-    page_icon="🗺️"  # valgfrit ikon i fanen
+    page_title="Parkeringskort Esbjerg",
+    page_icon="🚗",
+    layout="wide"
 )
-
 
 # --- Hent data fra Google Sheets ---
 SHEET_ID = "1DNHbwKxJ9_HKLtfJ_hC0jeHnKlmana_thEBQfr2sMfM"
@@ -52,8 +51,8 @@ st.components.v1.html(f"""
   }}
   #followButton {{
     position: absolute;
-    bottom: 10px;
-    left: 10px;
+    bottom: 20px;
+    left: 20px;
     z-index: 1000;
     background-color: white;
     border: 1px solid #ccc;
@@ -61,6 +60,7 @@ st.components.v1.html(f"""
     padding: 8px 12px;
     cursor: pointer;
     font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }}
   #followButton.active {{
     background-color: #007bff;
@@ -74,7 +74,8 @@ st.components.v1.html(f"""
 <button id="followButton">🔒 Følg mig: Fra</button>
 
 <script>
-var map = L.map('map').setView([55.703423, 8.755025], 18);
+// Opret kort uden center til at starte med
+var map = L.map('map');
 
 // OpenStreetMap lag
 L.tileLayer('https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
@@ -84,7 +85,7 @@ L.tileLayer('https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
 // Data fra Python
 var points = {json_data};
 
-// Tilføj røde/grønne prikker (uden numre)
+// Tilføj røde/grønne prikker
 points.forEach(p => {{
   var color = p.betalt == 1 ? 'green' : 'red';
   L.circleMarker([p.lat, p.lon], {{
@@ -94,7 +95,7 @@ points.forEach(p => {{
   }}).addTo(map);
 }});
 
-let followMode = false;  // starter som "fra"
+let followMode = false;
 const followButton = document.getElementById("followButton");
 
 followButton.addEventListener("click", () => {{
@@ -108,11 +109,18 @@ followButton.addEventListener("click", () => {{
   }}
 }});
 
-// Live GPS tracking
+// GPS tracking og initial centrering
 if (navigator.geolocation) {{
+  navigator.geolocation.getCurrentPosition(function(pos) {{
+    var lat = pos.coords.latitude;
+    var lon = pos.coords.longitude;
+    map.setView([lat, lon], 17); // start dér hvor brugeren er
+  }});
+
   navigator.geolocation.watchPosition(function(pos) {{
     var lat = pos.coords.latitude;
     var lon = pos.coords.longitude;
+
     if (!window.userMarker) {{
       window.userMarker = L.marker([lat, lon]).addTo(map);
       window.userCircle = L.circle([lat, lon], {{
@@ -120,16 +128,18 @@ if (navigator.geolocation) {{
         color: 'blue',
         fillOpacity: 0.1
       }}).addTo(map);
-      if (followMode) map.setView([lat, lon], 17);
     }} else {{
       window.userMarker.setLatLng([lat, lon]);
       window.userCircle.setLatLng([lat, lon]);
       window.userCircle.setRadius(pos.coords.accuracy);
-      if (followMode) map.setView([lat, lon], map.getZoom());
+    }}
+
+    if (followMode) {{
+      map.setView([lat, lon], map.getZoom());
     }}
   }},
   function(err){{
-    console.log(err);
+    console.warn("GPS-fejl:", err);
   }},
   {{
     enableHighAccuracy: true,
